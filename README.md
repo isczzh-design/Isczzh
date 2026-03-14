@@ -39,7 +39,9 @@ npm test
 
 ## Android APK 集成
 
-本项目已提供 GitHub Actions 工作流：`.github/workflows/android-apk.yml`，会先把网页资源整理到 `www/`（Capacitor 的 `webDir`）、在 CI 中强制写入有效的 `capacitor.config.json`，并配置 Java 17 + npm cache。若仓库已包含 `android/` 工程，workflow 会容忍 `cap add android` 的已存在报错并继续执行 `cap sync android`，避免流程中断。
+本项目已提供 GitHub Actions 工作流：`.github/workflows/android-apk.yml`，会先把网页资源整理到 `www/`（Capacitor 的 `webDir`）并在 CI 中强制写入有效的 `capacitor.config.json`，再构建 APK。
+本项目已提供 GitHub Actions 工作流：`.github/workflows/android-apk.yml`，会先把网页资源整理到 `www/`（Capacitor 的 `webDir`）再构建 APK。
+本项目已提供 GitHub Actions 工作流：`.github/workflows/android-apk.yml`。
 
 使用方式：
 
