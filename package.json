@@ -1,6 +1,6 @@
 {
-  "name": "snake-classic",
-  "version": "1.0.0",
+  "name": "spaced-repetition-vocab-app",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "scripts": {

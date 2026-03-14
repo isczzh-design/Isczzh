@@ -1,79 +1,80 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  createFoodPosition,
-  createInitialState,
-  queueDirection,
-  step
-} from '../src/gameLogic.js';
+  accuracy,
+  addDays,
+  advanceAfterCycle,
+  createWordProgress,
+  markModeResult,
+  pickTodayQueue,
+  tokenizeSentence
+} from '../src/appLogic.js';
 
-test('snake moves forward in current direction', () => {
-  const state = createInitialState(10);
-  const next = step(state, () => 0);
+test('first cycle completion schedules day-1 review', () => {
+  const p = createWordProgress('w1');
+  const today = '2026-01-01';
 
-  assert.deepEqual(next.snake[0], { x: 6, y: 5 });
-  assert.equal(next.score, 0);
-  assert.equal(next.isGameOver, false);
+  advanceAfterCycle(p, today);
+
+  assert.equal(p.stage, 0);
+  assert.equal(p.dueDate, addDays(today, 1));
 });
 
-test('snake grows and score increments when food is eaten', () => {
-  const state = createInitialState(10);
-  state.food = { x: 6, y: 5 };
+test('later cycles follow 2/4/... day intervals', () => {
+  const p = createWordProgress('w2');
+  p.stage = 0;
 
-  const next = step(state, () => 0);
-
-  assert.equal(next.snake.length, state.snake.length + 1);
-  assert.equal(next.score, 1);
-  assert.notDeepEqual(next.food, state.food);
+  advanceAfterCycle(p, '2026-01-02');
+  assert.equal(p.stage, 1);
+  assert.equal(p.dueDate, '2026-01-04');
 });
 
-test('collision with wall ends game', () => {
-  const state = {
-    ...createInitialState(5),
-    snake: [{ x: 4, y: 2 }, { x: 3, y: 2 }, { x: 2, y: 2 }],
-    direction: 'right',
-    queuedDirection: 'right'
+test('word advances only after both modes are correct', () => {
+  const p = createWordProgress('w3');
+  const today = '2026-01-01';
+
+  let result = markModeResult(p, 'meaning', true, today);
+  assert.equal(result.finishedCycle, false);
+
+  result = markModeResult(p, 'cloze', true, today);
+  assert.equal(result.finishedCycle, true);
+  assert.equal(p.stage, 0);
+});
+
+test('queue prioritizes due reviews and keeps fresh words', () => {
+  const words = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+  const map = {
+    a: {
+      ...createWordProgress('a'),
+      stage: 0,
+      dueDate: '2026-01-01'
+    },
+    b: createWordProgress('b'),
+    c: {
+      ...createWordProgress('c'),
+      stage: 0,
+      dueDate: '2026-01-03'
+    }
   };
 
-  const next = step(state);
-
-  assert.equal(next.isGameOver, true);
+  const q = pickTodayQueue(words, map, '2026-01-02');
+  assert.deepEqual(q.review.map((w) => w.id), ['a']);
+  assert.deepEqual(q.fresh.map((w) => w.id), ['b']);
 });
 
-test('cannot immediately reverse direction', () => {
-  const state = createInitialState(10);
-  const queued = queueDirection(state, 'left');
-
-  assert.equal(queued.queuedDirection, 'right');
-});
-
-test('food placement avoids snake cells', () => {
-  const snake = [
-    { x: 0, y: 0 },
-    { x: 1, y: 0 },
-    { x: 2, y: 0 }
-  ];
-  const food = createFoodPosition(3, snake, () => 0);
-
-  assert.deepEqual(food, { x: 0, y: 1 });
-});
-
-test('collision with self ends game', () => {
-  const state = {
-    ...createInitialState(6),
-    snake: [
-      { x: 2, y: 2 },
-      { x: 2, y: 3 },
-      { x: 1, y: 3 },
-      { x: 1, y: 2 },
-      { x: 1, y: 1 },
-      { x: 2, y: 1 }
-    ],
-    direction: 'left',
-    queuedDirection: 'left'
+test('accuracy reflects wrong answers', () => {
+  const map = {
+    a: { attempts: 10, wrong: 2 },
+    b: { attempts: 5, wrong: 1 }
   };
 
-  const next = step(state);
+  const stats = accuracy(map);
+  assert.equal(stats.attempts, 15);
+  assert.equal(stats.wrong, 3);
+  assert.equal(stats.accuracy, 80);
+});
 
-  assert.equal(next.isGameOver, true);
+test('tokenizeSentence splits words and punctuation', () => {
+  const parts = tokenizeSentence('Hello, world!');
+  assert.deepEqual(parts, ['Hello', ', ', 'world', '!']);
 });
