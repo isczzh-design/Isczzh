@@ -1,34 +1,56 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Snake</title>
+    <title>记忆曲线背单词</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="container">
-      <h1>Snake</h1>
-      <section class="hud" aria-label="Game info">
-        <p>Score: <span id="score">0</span></p>
-        <div class="actions">
-          <button id="pause-btn" type="button">Pause</button>
-          <button id="restart-btn" type="button">Restart</button>
-        </div>
+      <h1>记忆曲线背单词</h1>
+
+      <section class="toolbar" aria-label="词库控制">
+        <label for="bank-select">选择词库</label>
+        <select id="bank-select">
+          <option value="ielts">IELTS 雅思</option>
+          <option value="toefl">TOEFL 托福</option>
+        </select>
+        <button id="load-btn" type="button">联网加载词库</button>
       </section>
-      <p id="status" class="status">Use Arrow keys or WASD to move.</p>
-      <div
-        id="game-board"
-        class="board"
-        role="grid"
-        aria-label="Snake game board"
-      ></div>
-      <section class="controls" aria-label="Touch controls">
-        <button data-dir="up" aria-label="Move up">↑</button>
-        <div class="controls-row">
-          <button data-dir="left" aria-label="Move left">←</button>
-          <button data-dir="down" aria-label="Move down">↓</button>
-          <button data-dir="right" aria-label="Move right">→</button>
+
+      <section class="stats" aria-label="学习统计">
+        <p>今日待复习：<span id="due-count">0</span></p>
+        <p>今日新词：<span id="new-count">0</span></p>
+        <p>今日计划总量：<span id="today-target">0</span></p>
+        <p>今日已记住：<span id="remembered-today">0</span></p>
+        <p>正确率：<span id="accuracy">100%</span></p>
+        <p>错误次数：<span id="wrong-count">0</span></p>
+        <p>总作答：<span id="attempt-count">0</span></p>
+      </section>
+
+      <p class="badge" id="mode-badge">模式1：句子 + 红词 -> 输入中文</p>
+      <p id="status" class="status">优先完成复习，再开始新词。</p>
+
+      <article class="card" aria-live="polite">
+        <div id="sentence" class="sentence"></div>
+        <p id="sentence-zh" class="sentence-zh"></p>
+        <p id="meaning" class="meaning"></p>
+        <p id="prompt" class="prompt"></p>
+        <p id="word-hint" class="word-hint"></p>
+      </article>
+
+      <section class="assist-actions" aria-label="辅助功能">
+        <button id="hint-btn" type="button">句子提示（复习时）</button>
+        <button id="speak-word-btn" type="button">美音读单词</button>
+        <button id="speak-sentence-btn" type="button">美音读句子</button>
+      </section>
+
+      <section class="answer-box" aria-label="答题区域">
+        <input id="answer" type="text" placeholder="输入你的答案" autocomplete="off" />
+        <div class="actions">
+          <button id="submit-btn" type="button">提交</button>
+          <button id="skip-btn" type="button">下一个（略过）</button>
         </div>
       </section>
     </main>
