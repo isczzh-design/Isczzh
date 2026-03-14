@@ -22,11 +22,27 @@ jobs:
 
       - name: Prepare web assets for Capacitor
         run: |
+          rm -rf www android
           rm -rf www
           mkdir -p www
           cp index.html styles.css www/
           cp -R src www/src
 
+      - name: Force valid Capacitor config for CI
+        run: |
+          cat > capacitor.config.json <<'JSON'
+          {
+            "appId": "vocab.app.cn",
+            "appName": "记忆曲线背单词",
+            "webDir": "www",
+            "bundledWebRuntime": false
+          }
+          JSON
+          cat capacitor.config.json
+
+      - name: Generate Capacitor Android project
+        run: |
+          npx cap add android
       - name: Generate Capacitor Android project
         run: |
           npx cap add android
