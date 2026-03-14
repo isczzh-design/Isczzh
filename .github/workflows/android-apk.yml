@@ -20,6 +20,16 @@ jobs:
           npm install
           npm install @capacitor/cli @capacitor/core @capacitor/android
 
+      - name: Prepare web assets for Capacitor
+        run: |
+          rm -rf www
+          mkdir -p www
+          cp index.html styles.css www/
+          cp -R src www/src
+
+      - name: Generate Capacitor Android project
+        run: |
+          npx cap add android
       - name: Generate Capacitor Android project
         run: |
           npx cap init vocab.app.cn "记忆曲线背单词" --web-dir . --npm-client npm || true

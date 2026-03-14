@@ -1,6 +1,7 @@
 {
   "appId": "vocab.app.cn",
   "appName": "记忆曲线背单词",
+  "webDir": "www",
   "webDir": ".",
   "bundledWebRuntime": false
 }
