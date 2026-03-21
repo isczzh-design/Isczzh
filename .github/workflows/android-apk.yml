@@ -1,0 +1,74 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install dependencies
+        run: |
+          set -euxo pipefail
+          npm ci || npm install
+          npm install @capacitor/cli @capacitor/core @capacitor/android
+
+      - name: Prepare web assets for Capacitor
+        run: |
+          set -euxo pipefail
+          rm -rf www
+          mkdir -p www
+          cp index.html styles.css www/
+          cp -R src www/src
+
+      - name: Force valid Capacitor config for CI
+        run: |
+          set -euxo pipefail
+          cat > capacitor.config.json <<'JSON'
+          {
+            "appId": "vocab.app.cn",
+            "appName": "记忆曲线背单词",
+            "webDir": "www",
+            "bundledWebRuntime": false
+          }
+          JSON
+          cat capacitor.config.json
+
+      - name: Generate Capacitor Android project
+        shell: bash
+        run: |
+          set -euxo pipefail
+          if [ -d android ]; then
+            echo "android project already exists; skipping cap add"
+          else
+            npx cap add android
+          fi
+          npx cap sync android
+
+      - name: Build debug APK
+        run: |
+          set -euxo pipefail
+          cd android
+          ./gradlew --no-daemon assembleDebug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vocab-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
